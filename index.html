@@ -1,0 +1,95 @@
+<html>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="bundle.js"></script>
+
+<link href="index.css" rel="stylesheet">
+<body onLoad="init()">
+<div id="logger">
+<button id="clearlogger" onclick="clearlogger()">╳</button>
+<div id="logmessage"></div>
+</div>
+
+<div id="searchbox">
+<span id="tofindbox">
+<span id="clearsearch" onclick="clearsearch()">╳</span>
+<input id="tofind" onKeyUp="tofindinput()" title="search keywords" value="modera eat"/>
+<span id="searchbutton" onclick="dosearch2()">🔍</span>
+<div id=suggestionpopup></div>
+<div id=textpopup></div>
+</span>
+<span id="rowidbox">
+<input id="rowid" onKeyup="idinput(this)" title="Segment ID" value=""/>
+<span id="bookrange"></span>
+</span>
+</div>
+
+<div class="spacer">　</div>
+<div id="res"></div>
+
+</body>
+<script>
+	const clearlogger=()=>{
+		logmessage.innerHTML="";
+	}
+	const hidesuggestionpopup=()=>{
+		setTimeout(()=>suggestionpopup.style.display="none",200)
+	}
+	const showsuggestionpopup=()=>{
+		if (tofind.value.length) suggestionpopup.style.display="block";
+		hidetextpopup();
+	}
+	const hidetextpopup=()=>textpopup.style.display="none";
+	const showtextpopup=()=>{
+		textpopup.style.display="block";
+		textpopup.scrollTop=0;
+		hidesuggestionpopup();
+	}
+	const init=()=>{
+		logger.style.display="none";
+		tofind.onblur=hidesuggestionpopup;
+		//tofind.onfocus=showsuggestionpopup;
+		suggestionpopup.style.display="none";
+		hidetextpopup();
+		UI.init();
+		setTimeout(()=>{
+			idinput(rowid);
+		})
+		
+	}
+	const togglelogger=()=>logger.style.display=logger.style.display=="none"?"block":"none";
+	const idinput=(ele)=>{
+		if (event && event.key=="Enter") {
+			if (ele.value.toLowerCase()=="log") {
+				togglelogger();
+				ele.value="";
+			} else {
+				UI.read();
+			}
+			return;
+		}
+		ele.classList.remove("scope");
+		searchbox.classList.remove("scope");
+
+		UI.renderTOC(ele);
+	}
+	let inputtimer=0;
+	const tofindinput=()=>{
+		if (tofind.value.length) {
+			suggestionpopup.style.display="";
+		} else {
+			suggestionpopup.style.display="none";
+		}
+		clearTimeout(inputtimer);
+		if (event &&event.key=="Enter") {
+			UI.dosearch2();
+		} else {
+			inputtimer=setTimeout(()=>{
+				UI.dofindtokens();
+			},250)
+		}
+	}
+</script>
+
+</html>

@@ -1,0 +1,47 @@
+cell{vertical-align: top}
+body{margin: 0px;font-size:110%;flex-direction: column;display:flex;}
+
+.hit {color:red;}
+.segid {cursor:pointer;font-family: Courier;font-size:75%}
+.focussegid {cursor:pointer;font-family: Courier;font-size:75%;background-color: lightyellow}
+
+#tofind{height:1.4em;width:50%;border-width:1px;border-radius: 5px;border-style: none;}
+#rowid {height:1.4em;width:30%;border-width:1px;border-radius: 5px;border-style: none;}
+#searchbutton{height:2em;}
+.pli {font-family: Tahoma, Arial;color:brown;overflow-wrap:break-word;}
+.en{font-family:Georgia,Constantia;overflow-wrap:break-word;}
+input {font-size:100%;background:#dddddd;text-transform: lowercase;}
+#suggestionpopup{position: fixed;overflow-y: scroll; border: dotted silver 1px;
+	background:#dddddd;width: 80% ;height: 50%;z-index: 9;margin-left:3em;
+box-shadow:  2px 2px 4px 4px #AAAAAA;}
+.datetime {font-family: consolas;font-size:75%;color:brown;}
+#logger{position:fixed;overflow-y:scroll; border:solid black 1px;
+background-color:silver;z-index:9;width:10em;top:2em;right:0;height: 90%}
+#clearlogger{position:fixed;right:1em;}
+
+#textpopup{position: fixed;overflow-y: scroll;border:dotted silver 1px; width:85%;
+	background:#eeeeee;margin-left:10%;margin-right: 5%;height:90%;
+box-shadow:  2px 2px 4px 4px #AAAAAA;}
+cell.suggestion {padding:0.5em;}
+.suggestion> .cancel {color:gray;text-decoration:line-through; ;}
+input.scope{background: lightgreen}
+button.serial{font-size:80%;}
+
+#searchbox.scope{outline: dashed  gray 1px;display:inline-block;}
+@media (orientation: portrait) {
+	cellgroup{display:block;}
+
+	cell {display: block}
+	.segid{border-top: dashed silver 1px}
+}
+@media (orientation: landscape) {
+	cell {display:table-cell;border-spacing:0px;border-bottom: dashed silver 1px}
+	cellgroup {display:table-row;}
+}	
+
+#clearsearch{cursor:pointer;}
+#searchbox{border:solid 1px white;position: fixed;background-color: white;width:100%;}
+#tofindbox{width:50%;}
+#rowidbox{width:40%;}
+.res {}
+.spacer{height:1.6em;}
