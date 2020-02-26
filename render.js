@@ -3,7 +3,14 @@ endswith$
 search only in scope 
 when input turn green
 
-Offline Tipitaka 2020.2.23</pre>`
+<a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.2.23
+
+Pure Client Side Javascript, may served by File:/// protocol 
+require browser with es2015 support, tested platform:
+PC        : Chrome (version 79 64bits)
+Android   : UCBrowser v12
+iOS 12/13 : Documents by Readdle
+</pre>`
 
 const MAXTERMTOKEN=10;
 const MAXTEXT=40; 
