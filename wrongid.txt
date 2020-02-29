@@ -1,0 +1,31 @@
+﻿pli-tv-bi-vb-sk1:75:0.1
+pli-tv-bi-vb-sk1:75:0.2
+pli-tv-bi-vb-sk1-75_root-pli-ms.json
+
+
+  "pli-tv-bi-vb-sk75:0.1": "The sub-chapter on shoes ",
+  "pli-tv-bi-vb-sk75:0.2": "75. the training rule on defecating in water ",
+pli-tv-bi-vb-sk1-75_translation-en-brahmali.json
+
+
+an1.259.1.1
+an1.260.1.1
+an1.261.1.1
+an1.262.1.1
+an1.263.1.1
+an1.264.1.1
+an1.265.1.1
+an1.266.1.1
+an1.267.1.1
+an1.267.1.2
+
+an2.4.0.1
+
+pli-tv-kd1:2.3.8,3. Mucalindakathā|The story at the powder-puff tree 
+pli-tv-kd1:3.1.1,Atha kho bhagavā sattāhassa accayena tamhā samādhimhā 
+
+2.3.8 ==> 3.1.0
+
+
+2020.02.22
+missing mn31:6  mn31:5.8 jump to mn31:7.1 

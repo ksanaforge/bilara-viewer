@@ -7,7 +7,7 @@ body{margin: 0px;font-size:110%;flex-direction: column;display:flex;}
 
 #tofind{height:1.4em;width:50%;border-width:1px;border-radius: 5px;border-style: none;}
 #rowid {height:1.4em;width:30%;border-width:1px;border-radius: 5px;border-style: none;}
-#searchbutton{height:2em;}
+#searchbutton{cursor:pointer;height:2em;}
 .pli {font-family: Tahoma, Arial;color:brown;overflow-wrap:break-word;}
 .en{font-family:Georgia,Constantia;overflow-wrap:break-word;}
 input {font-size:100%;background:#dddddd;text-transform: lowercase;}

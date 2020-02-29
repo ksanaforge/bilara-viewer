@@ -32,12 +32,28 @@ const dofile=(raw)=>{
 
 attr="pli"
 console.log(set+"-"+attr);
-rootfile.forEach(n=> dofile(JSON.parse(fs.readFileSync(n,"utf8"))));
+rootfile.forEach(n=> {
+	if (!fs.existsSync(n)) {
+		console.log("not found",n);
+		return;
+	}
+	process.stdout.write("\r"+n+"                                      ");
+	const d=fs.readFileSync(n,"utf8");
+	dofile(JSON.parse(d))
+});
 
 
 attr="en"
 console.log(set+"-"+attr);
-enfile.forEach(n=>dofile(JSON.parse(fs.readFileSync(n,"utf8"))));
+enfile.forEach(n=>{
+	if (!fs.existsSync(n)) {
+		console.log("not found",n);
+		return;
+	}
+	process.stdout.write("\r"+n+"                                      ");
+	const d=fs.readFileSync(n,"utf8");
+	dofile(JSON.parse(d))
+});
 
 
 
@@ -52,6 +68,10 @@ for (var key in bag) {
 dataset.sort((a,b)=> comparesegment(a[0],b[0]));
 
 
-dataset.forEach((item)=>item[0]=item[0].replace(/^pli-tv-/,"").replace(/^bu-vb-/,""));
+dataset.forEach((item)=>item[0]=item[0]
+		.replace(/^pli-tv-/,"")
+		.replace(/^bu-vb-/,"")
+		.replace(/^bu-pm/,"pm")
+		.replace(/^bi-vb-/,"bi-"));
 console.log("writing")
 fs.writeFileSync(set+"-raw.txt",dataset.join("\n"),"utf8");

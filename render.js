@@ -3,18 +3,23 @@ endswith$
 search only in scope 
 when input turn green
 
-<a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.2.23
+<a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.2.29
 
 Pure Client Side Javascript, may served by File:/// protocol 
 require browser with es2015 support, tested platform:
 PC        : Chrome (version 79 64bits)
 Android   : UCBrowser v12
 iOS 12/13 : Documents by Readdle
+
+==change log==
+2020.2.29
+ Full set of Pali tipitaka
+ Click segment id of search result for neighbor segments. 
 </pre>`
 
 const MAXTERMTOKEN=10;
 const MAXTEXT=40; 
-const set="pitaka";
+const set="tipitaka";
 let searchrange=null;
 const log=require("./logger");
 
@@ -59,7 +64,7 @@ const renderSerial=serial=>{
 	return "<span>"+serial.map( s=>"<button class=serial onclick=setbook(this)>"+s+"</button>").join(" ")+"</span>";
 }
 
-const showtext=(id)=>{
+window.showtext=(id)=>{
 	const opts={prefix:id,max:100};
 	Dengine.readpage(set,opts,(data,db)=>{
 		rendertable(data,id,textpopup);
@@ -88,13 +93,13 @@ const renderSuggestion=({matches,tofinds})=>{
 	out+="</cellgroup></table>";
 	document.getElementById("suggestionpopup").innerHTML=out;
 }
-const rendertable=(data,focusid,ele)=>{
+const rendertable=(data,focusid,ele,idlink)=>{
 	hidesuggestionpopup();
 	if (!ele) {
 		ele=document.getElementById("res");
 	}
 	let clickable='';
-	idclickable = ele==document.getElementById("res");
+	let idclickable = idlink && ele==document.getElementById("res");
 	let out="<table>";
 
 	const tfobj=Dengine.parseTofind(tofind.value);
@@ -134,7 +139,7 @@ const setStatus=msg=>{
 	var elapsed=(new Date()).getMilliseconds()-timestart;
 	res.innerHTML=msg +"(" +(elapsed?elapsed:"")+" ms)";
 }
-const dosearch2=()=>{
+window.dosearch2=()=>{
 	hidesuggestionpopup();
 	timestart=(new Date()).getMilliseconds();
 	setStatus("loading tokens");
@@ -160,7 +165,7 @@ const dosearch2=()=>{
 			}
 			setStatus("fetching text");
 			Dengine.fetchidarr(set,idarr,(data,db)=>{
-				rendertable(data);
+				rendertable(data,'',document.getElementById("res"),true);
 			});
 		});
 	});
