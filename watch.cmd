@@ -1,0 +1,1 @@
+watchify -x vue -x react -x react-dom index.js -o bundle.js

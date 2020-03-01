@@ -1,0 +1,13 @@
+*.zip
+*.7z
+*.txt
+node_modules
+tipitaka
+pitaka
+nikaya
+*.min.js
+nginx
+nikaya*.*
+test*.*
+vue*.*
+bilara*.*

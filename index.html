@@ -14,10 +14,19 @@
 <div id="searchbox">
 <span id="tofindbox">
 <span id="clearsearch" onclick="clearsearch()">╳</span>
-<input id="tofind" onKeyUp="tofindinput()" title="search keywords" value="appamādena sampādet"/>
+<input id="tofind" onKeyUp="tofindinput()" title="search keywords" value="material heir"/>
 <span id="searchbutton" onclick="dosearch2()">🔍</span>
 <div id=suggestionpopup></div>
-<div id=textpopup></div>
+<div id=textpopup>
+	<span id="closetextpopup" onclick="hidetextpopup()">╳</span>
+	<div id=textpopupbody></div>
+</div>
+<div id=textmenu>
+	<div id="textmenuitem">
+	<button id="btnsentencesearch" onclick="sentencesearch()">Find Similar paragraph</button>
+	<label id="lblomit"><input id="btnomit" type="checkbox" checked />Omitting same book</label>
+	</div>
+</div>
 </span>
 <span id="rowidbox">
 <input id="rowid" onKeyup="idinput(this)" title="Segment ID" value=""/>
@@ -46,7 +55,15 @@
 		textpopup.scrollTop=0;
 		hidesuggestionpopup();
 	}
+	const sidfromhash=()=>{
+		var hash=document.location.hash.substr(1);
+		const regex=/i=([^&]+)/;
+		const m=hash.match(regex);
+		return m?m[1]:'';
+
+	}
 	const init=()=>{
+		const sid=sidfromhash();
 		logger.style.display="none";
 		tofind.onblur=hidesuggestionpopup;
 		//tofind.onfocus=showsuggestionpopup;
@@ -54,13 +71,14 @@
 		hidetextpopup();
 		UI.init();
 		setTimeout(()=>{
-			idinput(rowid);
+			idinput(rowid,sid);	
 		})
 		
 	}
 	const togglelogger=()=>logger.style.display=logger.style.display=="none"?"block":"none";
-	const idinput=(ele)=>{
-		if (event && event.key=="Enter") {
+	const idinput=(ele,fromhash)=>{
+		if (fromhash) ele.value=fromhash;
+		if (fromhash || (event && event.key=="Enter")) {
 			if (ele.value.toLowerCase()=="log") {
 				togglelogger();
 				ele.value="";

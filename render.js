@@ -1,17 +1,15 @@
-const helpmsg=`<pre> ?partial 
-endswith$
-search only in scope 
-when input turn green
+const helpmsg=`<pre> <a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.3.1
 
-<a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.2.29
-
-Pure Client Side Javascript, may served by File:/// protocol 
-require browser with es2015 support, tested platform:
-PC        : Chrome (version 79 64bits)
-Android   : UCBrowser v12
-iOS 12/13 : Documents by Readdle
+ vinnan  =&gt;  viññāṇaṃ  viññāṇe  viññāṇassa
+ buddha$ =&gt;  buddhā    buddha 
+ ?tabba$ =&gt;  veditabbā kātabbā  vattabba
+ search only in scope 
+ when input turn green
 
 ==change log==
+2020.3.1
+ find similar sentence
+ hash tag to store segment id
 2020.2.29
  Full set of Pali tipitaka
  Click segment id of search result for neighbor segments. 
@@ -20,13 +18,13 @@ iOS 12/13 : Documents by Readdle
 const MAXTERMTOKEN=10;
 const MAXTEXT=40; 
 const set="tipitaka";
-let searchrange=null;
+let __searchrange=null;
 const log=require("./logger");
 
 const init=()=>{
 	Dengine.setlogger(log);
 }
-const clearsearch=()=>{
+window.clearsearch=()=>{
 	tofind.value="";
 	tofind.focus();
 }
@@ -67,11 +65,11 @@ const renderSerial=serial=>{
 window.showtext=(id)=>{
 	const opts={prefix:id,max:100};
 	Dengine.readpage(set,opts,(data,db)=>{
-		rendertable(data,id,textpopup);
+		rendertable(data,id,textpopupbody);
 		showtextpopup();
 	});
 }
-const selectsuggestion=ele=>{
+window.selectsuggestion=ele=>{
 	tofind.value=tofind.value.replace(ele.dataset.suggestion, event.target.innerHTML)
 	tofind.focus();
 }
@@ -93,13 +91,83 @@ const renderSuggestion=({matches,tofinds})=>{
 	out+="</cellgroup></table>";
 	document.getElementById("suggestionpopup").innerHTML=out;
 }
+const hidetextmenu=()=>{
+	document.getElementById("textmenu").style.display='none'
+}
+const showtextmenu=(basenode)=>{
+	let btn=document.getElementById("btnsentencesearch");
+	if (btn.textbackup) btn.innerText=btn.textbackup;
+	btn.disabled=false;
+	lblomit.style.display='inline';
+	let r=basenode.getBoundingClientRect();
+ 	let tm=document.getElementById("textmenu");
+ 	tm.style.top=basenode.clientTop+r.y+r.height;
+ 	tm.style.left=basenode.clientLeft+r.x;
+
+	document.getElementById("textmenu").style.display='block'
+}
+
+const disabletextmenu=()=>{
+	let btn=document.getElementById("btnsentencesearch");
+	btn.disabled=true;
+	btn.textbackup=btn.innerText;
+	btn.innerText="searching";
+	lblomit.style.display='none';
+}
+let selectiontimer=0;
+document.addEventListener('selectionchange', (event) => {
+  clearTimeout(selectiontimer);
+  selectiontimer=setTimeout(()=>{
+  	const sel=document.getSelection();
+  	if (!sel||!sel.baseNode)return;
+  	const f=sel.baseNode.parentElement;
+  	if (f.classList.contains("pli")||f.classList.contains("en")){
+  		if (sel.toString()==""){
+  			hidetextmenu();
+  		} else {
+	 	 	showtextmenu(f);		
+	 	}
+  	}
+  },250);
+  
+});
+window.closetextmenu=()=>{
+	setTimeout(()=>hidetextmenu());
+}
+window.sentencesearch=()=>{
+	const sel=document.getSelection();
+	const tf=sel.toString();
+  	const f=sel.baseNode.parentElement;
+  	let lang;
+
+  	lang=f.classList.contains("pli")?"pli":"";
+  	if (!lang) lang=f.classList.contains("en")?"en":"";
+  	if (!lang) return;
+
+  	let exclude='';
+  	if (document.getElementById("btnomit").checked) {
+  		exclude=f.parentElement.dataset['sid'];
+  		let at=exclude.indexOf(Dengine.SEGSEP);
+  		exclude=exclude.substr(0,at);
+  	}
+
+  	disabletextmenu();
+
+	const tokens={};
+	Dengine.tokenize(tf).forEach( item=>tokens[item]=[[item,-1]]);
+	let opts={maxtermtoken:MAXTERMTOKEN,exclude,ele:document.getElementById("textpopupbody")};
+	textsearch(lang,tokens,opts,()=>{
+
+		hidetextmenu();
+	});
+}
 const rendertable=(data,focusid,ele,idlink)=>{
 	hidesuggestionpopup();
 	if (!ele) {
 		ele=document.getElementById("res");
 	}
 	let clickable='';
-	let idclickable = idlink && ele==document.getElementById("res");
+	let idclickable = idlink || ele==document.getElementById("res");
 	let out="<table>";
 
 	const tfobj=Dengine.parseTofind(tofind.value);
@@ -114,10 +182,9 @@ const rendertable=(data,focusid,ele,idlink)=>{
 		}
 
 		let segid=data[i][0];
-		clickable=(idclickable||i==0||i==data.length-1)?" onclick=showtext('"+segid+"')":
-			" onclick=hidetextpopup()";
+		clickable=(idclickable||i==0||i==data.length-1)?" onclick=showtext('"+segid+"')":"";
 		let idclass=(focusid==segid)?"focussegid id=focussegid":"segid";
-		out+="<cellgroup><cell class="+idclass+clickable+">"+segid.replace(":",": ")+"</cell><cell class=pli>"+plitext
+		out+="<cellgroup data-sid='"+segid+"'><cell class="+idclass+clickable+">"+segid.replace(":",": ")+"</cell><cell class=pli>"+plitext
 		+"</cell><cell class=en>"+entext+"</cell></cellgroup>";
 	}
 	out+="</table>"
@@ -139,6 +206,36 @@ const setStatus=msg=>{
 	var elapsed=(new Date()).getMilliseconds()-timestart;
 	res.innerHTML=msg +"(" +(elapsed?elapsed:"")+" ms)";
 }
+
+const textsearch=(lang,tokens,opts,cb)=>{
+	Dengine.search(set,lang,tokens,opts,(res,db)=>{
+		let idarr=res.map( (item)=>db.seq2id(item[0]));
+		if (idarr.length==0){
+			if (cb){
+				cb('Not found');
+				return;
+			}
+			if (opts.searchrange){
+				setStatus("Not found in scope, adjust and try again.");
+			} else {
+				setStatus("Not found.");
+			}
+			
+			return;
+		}
+		if (idarr.length>MAXTEXT) {
+			idarr.splice(MAXTEXT);
+		}
+		Dengine.fetchidarr(set,idarr,(data,db)=>{
+			if (typeof cb=="function") cb(db);
+			rendertable(data,'',opts.ele||document.getElementById("res"),true);
+			if (opts.ele==textpopupbody)showtextpopup();
+
+		});
+	});
+}
+
+
 window.dosearch2=()=>{
 	hidesuggestionpopup();
 	timestart=(new Date()).getMilliseconds();
@@ -148,26 +245,8 @@ window.dosearch2=()=>{
 	for (var o of tfobj)tofindtoken[o.raw]=o.regex;
 	Dengine.findtokens(set,tofindtoken,(data,db,lang)=>{
 		setStatus("searching");
-		let opts={maxtermtoken:MAXTERMTOKEN,searchrange};
-		Dengine.search(set,lang,data,opts,(res,db)=>{
-			let idarr=res.map( (item)=>db.seq2id(item[0]));
-			if (idarr.length==0){
-				if (searchrange){
-					setStatus("Not found in scope, adjust and try again.");
-				} else {
-					setStatus("Not found.");
-				}
-				
-				return;
-			}
-			if (idarr.length>MAXTEXT) {
-				idarr.splice(MAXTEXT);
-			}
-			setStatus("fetching text");
-			Dengine.fetchidarr(set,idarr,(data,db)=>{
-				rendertable(data,'',document.getElementById("res"),true);
-			});
-		});
+		let opts={maxtermtoken:MAXTERMTOKEN,ele:document.getElementById("res"),searchrange:__searchrange};
+		textsearch(lang,data,opts);
 	});
 }
 const topWordWithCaret=(matches,tofindtokens)=>{ //topping word with caret
@@ -212,18 +291,21 @@ const read=()=>{//dn16:0.2
 	let prefix=rowid.value.toLowerCase().replace(/ /g,""); //space was added for reflow
 	const opts={prefix,max:200}
 	Dengine.readpage(set,opts,(data,db)=>{
-		if (data) rendertable(data);
+		if (data) {
+			rendertable(data);
+			location.hash="#i="+prefix;
+		}
 	});
 }
 const renderTOC=(ele)=>{
-	searchrange=null;
+	__searchrange=null;
 	bookrange.innerHTML="";
 	const prefix=ele.value.replace(/ /g,"").toLowerCase();
 	Dengine.getbookrange(set,prefix,(range,db)=>{
 		let bookinfo=null;
 		if (range.range &&range.books){
 			bookrange.innerHTML=range.books.length;
-			searchrange=range.range;
+			__searchrange=range.range;
 			ele.classList.add("scope")
 			searchbox.classList.add("scope");
 			bookinfo=db.getHierarchy(prefix);

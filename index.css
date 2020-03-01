@@ -19,8 +19,8 @@ box-shadow:  2px 2px 4px 4px #AAAAAA;}
 background-color:silver;z-index:9;width:10em;top:2em;right:0;height: 90%}
 #clearlogger{position:fixed;right:1em;}
 
-#textpopup{position: fixed;overflow-y: scroll;border:dotted silver 1px; width:85%;
-	background:#eeeeee;margin-left:10%;margin-right: 5%;height:90%;
+#textpopup{position: fixed;overflow-y: scroll;border:dotted silver 1px;
+	background:#eeeeee;margin-left:3em;margin-right: 1em;height:90%;
 box-shadow:  2px 2px 4px 4px #AAAAAA;}
 cell.suggestion {padding:0.5em;}
 .suggestion> .cancel {color:gray;text-decoration:line-through; ;}
@@ -45,3 +45,29 @@ button.serial{font-size:80%;}
 #rowidbox{width:40%;}
 .res {}
 .spacer{height:1.6em;}
+
+
+#textmenu {
+	z-index: 1000;
+	position: fixed;
+	background-color: silver;
+	display:none;
+	border-radius: 0.1em;
+	padding:5px;
+}
+#closetextpopup {
+	position: fixed;
+	right:1em;
+	z-index: 1000;
+	top:0em;
+}
+#textmenu .show {
+	display:block;
+}
+#closetextpopup, #closetextmenu{
+	cursor:pointer;
+}
+
+#btnsentencesearch{
+	font-size:100%;
+}
