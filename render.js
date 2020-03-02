@@ -1,3 +1,5 @@
+
+
 const helpmsg=`<pre> <a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.3.1
 
  vinnan  =&gt;  viññāṇaṃ  viññāṇe  viññāṇassa
@@ -21,10 +23,10 @@ const set="tipitaka";
 let __searchrange=null;
 const log=require("./logger");
 
-const init=()=>{
+const renderinit=()=>{
 	Dengine.setlogger(log);
 }
-window.clearsearch=()=>{
+const clearsearchclick=()=>{
 	tofind.value="";
 	tofind.focus();
 }
@@ -51,12 +53,12 @@ window.setbook=ele=>{
 	if (!bk)bk="";
 	rowid.value=bk+ele.innerHTML;
 	rowid.focus();
-	idinput(rowid);
+	idinput();
 }
 window.setsubbook=ele=>{
 	rowid.value=ele.getAttribute("book")+ele.innerHTML+".";
 	rowid.focus();
-	idinput(rowid);
+	idinput();
 }
 const renderSerial=serial=>{
 	return "<span>"+serial.map( s=>"<button class=serial onclick=setbook(this)>"+s+"</button>").join(" ")+"</span>";
@@ -93,25 +95,28 @@ const renderSuggestion=({matches,tofinds})=>{
 }
 const hidetextmenu=()=>{
 	document.getElementById("textmenu").style.display='none'
+	document.getElementById("rowidbox").style.display='inline';
 }
-const showtextmenu=(basenode)=>{
+const showtextmenu=(lang,tofind,sid)=>{
 	let btn=document.getElementById("btnsentencesearch");
-	if (btn.textbackup) btn.innerText=btn.textbackup;
+	if (btn.dataset.textbackup) btn.innerText=btn.dataset.textbackup;
 	btn.disabled=false;
+	btn.dataset.tofind=tofind;
+	btn.dataset.sid=sid;
+	btn.dataset.lang=lang;
 	lblomit.style.display='inline';
-	let r=basenode.getBoundingClientRect();
  	let tm=document.getElementById("textmenu");
- 	tm.style.top=basenode.clientTop+r.y+r.height;
- 	tm.style.left=basenode.clientLeft+r.x;
-
-	document.getElementById("textmenu").style.display='block'
+	document.getElementById("textmenu").style.display='inline'
+	document.getElementById("rowidbox").style.display='none';
 }
-
+const setSentenceStatus=msg=>{
+	document.getElementById("btnsentencesearch").innerText=msg;
+}
 const disabletextmenu=()=>{
 	let btn=document.getElementById("btnsentencesearch");
 	btn.disabled=true;
-	btn.textbackup=btn.innerText;
-	btn.innerText="searching";
+	btn.dataset.textbackup=btn.innerText;
+	btn.innerText="Getting selection";
 	lblomit.style.display='none';
 }
 let selectiontimer=0;
@@ -121,46 +126,60 @@ document.addEventListener('selectionchange', (event) => {
   	const sel=document.getSelection();
   	if (!sel||!sel.baseNode)return;
   	const f=sel.baseNode.parentElement;
+  	let tf=sel.toString().toLowerCase();
   	if (f.classList.contains("pli")||f.classList.contains("en")){
-  		if (sel.toString()==""){
+  		if (!tf){
   			hidetextmenu();
   		} else {
-	 	 	showtextmenu(f);		
+  			let lang;
+  			let sid=f.parentElement.dataset.sid;
+  			lang=f.classList.contains("pli")?"pli":"";
+ 		 	if (!lang) lang=f.classList.contains("en")?"en":"";
+	 	 	showtextmenu(lang,tf,sid);
 	 	}
   	}
-  },250);
+  },100);
   
 });
-window.closetextmenu=()=>{
-	setTimeout(()=>hidetextmenu());
+
+const toggleomit=()=>{
+	event.stopPropagation();
 }
-window.sentencesearch=()=>{
+const sentencesearch=()=>{
+	disabletextmenu();
 	const sel=document.getSelection();
-	const tf=sel.toString();
-  	const f=sel.baseNode.parentElement;
-  	let lang;
 
-  	lang=f.classList.contains("pli")?"pli":"";
-  	if (!lang) lang=f.classList.contains("en")?"en":"";
-  	if (!lang) return;
-
+	const tf=btnsentencesearch.dataset.tofind;
+	if (!tf)return;
+	const sid=btnsentencesearch.dataset.sid;
+	const lang=btnsentencesearch.dataset.lang;
+  	setSentenceStatus("ready to search lang "+lang);
   	let exclude='';
   	if (document.getElementById("btnomit").checked) {
-  		exclude=f.parentElement.dataset['sid'];
+  		exclude=sid;
   		let at=exclude.indexOf(Dengine.SEGSEP);
   		exclude=exclude.substr(0,at);
   	}
 
-  	disabletextmenu();
-
 	const tokens={};
 	Dengine.tokenize(tf).forEach( item=>tokens[item]=[[item,-1]]);
-	let opts={maxtermtoken:MAXTERMTOKEN,exclude,ele:document.getElementById("textpopupbody")};
+	let opts={maxtermtoken:MAXTERMTOKEN,exclude,
+		logger:setSentenceStatus,ele:document.getElementById("textpopupbody")};
 	textsearch(lang,tokens,opts,()=>{
-
 		hidetextmenu();
 	});
 }
+
+const hidesuggestionpopup=()=>{
+	setTimeout(()=>suggestionpopup.style.display="none",200)
+}
+const hidetextpopup=()=>textpopup.style.display="none";
+const showtextpopup=()=>{
+	textpopup.style.display="block";
+	textpopup.scrollTop=0;
+	hidesuggestionpopup();
+}
+
 const rendertable=(data,focusid,ele,idlink)=>{
 	hidesuggestionpopup();
 	if (!ele) {
@@ -226,6 +245,7 @@ const textsearch=(lang,tokens,opts,cb)=>{
 		if (idarr.length>MAXTEXT) {
 			idarr.splice(MAXTEXT);
 		}
+		if (opts.logger) opts.logger("fetching idarr "+idarr.length);
 		Dengine.fetchidarr(set,idarr,(data,db)=>{
 			if (typeof cb=="function") cb(db);
 			rendertable(data,'',opts.ele||document.getElementById("res"),true);
@@ -236,7 +256,7 @@ const textsearch=(lang,tokens,opts,cb)=>{
 }
 
 
-window.dosearch2=()=>{
+const dosearch2=()=>{
 	hidesuggestionpopup();
 	timestart=(new Date()).getMilliseconds();
 	setStatus("loading tokens");
@@ -245,6 +265,7 @@ window.dosearch2=()=>{
 	for (var o of tfobj)tofindtoken[o.raw]=o.regex;
 	Dengine.findtokens(set,tofindtoken,(data,db,lang)=>{
 		setStatus("searching");
+		setHash({q:tofind.value});
 		let opts={maxtermtoken:MAXTERMTOKEN,ele:document.getElementById("res"),searchrange:__searchrange};
 		textsearch(lang,data,opts);
 	});
@@ -287,13 +308,29 @@ const dofindtokens=()=>{
 		renderSuggestion(m);
 	});		
 }
+const setHash=(newobj)=>{
+	let hash=document.location.hash.substr(1);
+	const p=new URLSearchParams(hash);
+	for (var key in newobj){
+		p.delete(key);
+		p.append(key,newobj[key]);
+	}
+	document.location.hash="#"+p.toString();
+}
+const URLParams=()=>{
+	let hash=document.location.hash.substr(1);
+	const p=new URLSearchParams(hash);
+	const out={};
+	p.forEach( (v,k)=>out[k]=v);
+	return out;
+}
 const read=()=>{//dn16:0.2
 	let prefix=rowid.value.toLowerCase().replace(/ /g,""); //space was added for reflow
 	const opts={prefix,max:200}
 	Dengine.readpage(set,opts,(data,db)=>{
 		if (data) {
 			rendertable(data);
-			location.hash="#i="+prefix;
+			setHash({i:prefix});
 		}
 	});
 }
@@ -314,12 +351,17 @@ const renderTOC=(ele)=>{
 		if (!bookinfo)bookinfo="";
 		if (blurb){
 			res.innerHTML=renderBookinfo(prefix,bookinfo)+blurb;
-		} else{
-			res.innerHTML=renderSerial(db.getSerials())+helpmsg;
 		}
 	});
 }
-const UI={
-	renderTOC,read,dosearch2,dofindtokens,init
+
+const renderbindactions=()=>{
+	btnsentencesearch.onclick=sentencesearch;
+	btnomit.onclick=toggleomit;
+	searchbutton.onclick=dosearch2;
+	clearsearch.onclick=clearsearchclick;
+
 }
-window.UI=UI;
+
+module.exports={renderTOC,read,dosearch2,dofindtokens,renderbindactions,renderinit,
+hidetextpopup,hidesuggestionpopup,URLParams}

@@ -21,7 +21,7 @@ background-color:silver;z-index:9;width:10em;top:2em;right:0;height: 90%}
 
 #textpopup{position: fixed;overflow-y: scroll;border:dotted silver 1px;
 	background:#eeeeee;margin-left:3em;margin-right: 1em;height:90%;
-box-shadow:  2px 2px 4px 4px #AAAAAA;}
+box-shadow:  2px 2px 4px 4px #AAAAAA;z-index:7;}
 cell.suggestion {padding:0.5em;}
 .suggestion> .cancel {color:gray;text-decoration:line-through; ;}
 input.scope{background: lightgreen}
@@ -48,8 +48,7 @@ button.serial{font-size:80%;}
 
 
 #textmenu {
-	z-index: 1000;
-	position: fixed;
+	z-index: 8;
 	background-color: silver;
 	display:none;
 	border-radius: 0.1em;
@@ -57,17 +56,18 @@ button.serial{font-size:80%;}
 }
 #closetextpopup {
 	position: fixed;
-	right:1em;
-	z-index: 1000;
-	top:0em;
+	right:2em;
+	z-index: 99;
 }
 #textmenu .show {
-	display:block;
+	display:inline;
 }
 #closetextpopup, #closetextmenu{
 	cursor:pointer;
 }
 
 #btnsentencesearch{
-	font-size:100%;
+	border: solid 1px brown;
+	border-radius: 3px;
+	cursor: pointer;
 }
