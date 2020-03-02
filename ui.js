@@ -21,8 +21,13 @@ window.init=()=>{
 	bindactions();
 	renderbindactions();
 	setTimeout(()=>{
-		rowid.value=i;
-		read();	
+		if (i) {
+			rowid.value=i;
+			read();	
+		} else {
+			renderTOC(rowid);
+		}
+		
 	},10);
 }
 const togglelogger=()=>logger.style.display=logger.style.display=="none"?"block":"none";
@@ -59,7 +64,7 @@ const tofindinput=()=>{
 }
 const bindactions=()=>{
 	closetextpopup.onclick=hidetextpopup;
-	rowid.onkeyup=idinput;
+	rowid.oninput=idinput;
 	clearlogger.clearloggerclick;
 	tofind.onkeyup=tofindinput;
 }

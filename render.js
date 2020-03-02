@@ -53,12 +53,12 @@ window.setbook=ele=>{
 	if (!bk)bk="";
 	rowid.value=bk+ele.innerHTML;
 	rowid.focus();
-	idinput();
+	rowid.oninput();
 }
 window.setsubbook=ele=>{
 	rowid.value=ele.getAttribute("book")+ele.innerHTML+".";
 	rowid.focus();
-	idinput();
+	rowid.oninput();
 }
 const renderSerial=serial=>{
 	return "<span>"+serial.map( s=>"<button class=serial onclick=setbook(this)>"+s+"</button>").join(" ")+"</span>";
@@ -351,6 +351,8 @@ const renderTOC=(ele)=>{
 		if (!bookinfo)bookinfo="";
 		if (blurb){
 			res.innerHTML=renderBookinfo(prefix,bookinfo)+blurb;
+		} else{
+			res.innerHTML=renderSerial(db.getSerials())+helpmsg;
 		}
 	});
 }
