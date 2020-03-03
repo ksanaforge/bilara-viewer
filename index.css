@@ -27,7 +27,7 @@ cell.suggestion {padding:0.5em;}
 input.scope{background: lightgreen}
 button.serial{font-size:80%;}
 
-#searchbox.scope{outline: dashed  gray 1px;display:inline-block;}
+#searchpanel.scope{outline: dashed  gray 1px;display:inline-block;}
 @media (orientation: portrait) {
 	cellgroup{display:block;}
 
@@ -40,15 +40,17 @@ button.serial{font-size:80%;}
 }	
 
 #clearsearch{cursor:pointer;}
-#searchbox{border:solid 1px white;position: fixed;background-color: white;width:100%;}
+#searchpanel{border:solid 1px white;position: fixed;background-color: white;width:100%;}
+
 #tofindbox{width:50%;}
 #rowidbox{width:40%;}
 .res {}
 .spacer{height:1.6em;}
 
-
-#textmenu {
+button{font-size:90%;}
+#selectionpanel {
 	z-index: 8;
+	position: fixed;
 	background-color: silver;
 	display:none;
 	border-radius: 0.1em;
@@ -59,10 +61,10 @@ button.serial{font-size:80%;}
 	right:2em;
 	z-index: 99;
 }
-#textmenu .show {
+#selectionpanel .show {
 	display:inline;
 }
-#closetextpopup, #closetextmenu{
+#closetextpopup, #closeselectionpanel{
 	cursor:pointer;
 }
 

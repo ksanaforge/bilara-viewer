@@ -10,7 +10,20 @@
 <div id="logmessage"></div>
 </div>
 
-<div id="searchbox">
+<div id=selectionpanel>
+	<div id="similarsentencebox">
+	<button id="btnsentencesearch">Find Similar paragraph</button>
+	<label id="lblomit"><input id="btnomit" type="checkbox" checked/>Omitting same book</label>
+	</div>
+
+	<div id="singletermbox">
+		<button id="btnconcordance">Concordance</button>
+		<button id="btndictionary">Dictionary</button>
+	</div>
+</div>
+
+<div id="searchpanel">
+
 <span id="tofindbox">
 <span id="clearsearch">╳</span>
 <input id="tofind" title="search keywords" value="material heir"/>
@@ -22,12 +35,7 @@
 </div>
 
 </span>
-<span id=textmenu>
-	<span id="textmenuitem">
-	<span id="btnsentencesearch">Find Similar paragraph</span>
-	<label id="lblomit"><input id="btnomit" type="checkbox" checked/>Omitting same book</label>
-	</span>
-</span>
+
 <span id="rowidbox">
 <span id="searchbutton">🔍</span>
 <input id="rowid" title="Segment ID" value=""/>

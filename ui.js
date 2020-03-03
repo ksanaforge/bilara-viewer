@@ -20,6 +20,7 @@ window.init=()=>{
 	renderinit();
 	bindactions();
 	renderbindactions();
+	
 	setTimeout(()=>{
 		if (i) {
 			rowid.value=i;
@@ -42,7 +43,7 @@ const idinput=()=>{
 		return;
 	}
 	rowid.classList.remove("scope");
-	searchbox.classList.remove("scope");
+	searchpanel.classList.remove("scope");
 
 	renderTOC(rowid);
 }
@@ -62,9 +63,12 @@ const tofindinput=()=>{
 		},250)
 	}
 }
+
 const bindactions=()=>{
 	closetextpopup.onclick=hidetextpopup;
 	rowid.oninput=idinput;
+	rowid.onkeyup=idinput;
 	clearlogger.clearloggerclick;
 	tofind.onkeyup=tofindinput;
+
 }

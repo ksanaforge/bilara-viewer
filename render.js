@@ -93,26 +93,41 @@ const renderSuggestion=({matches,tofinds})=>{
 	out+="</cellgroup></table>";
 	document.getElementById("suggestionpopup").innerHTML=out;
 }
-const hidetextmenu=()=>{
-	document.getElementById("textmenu").style.display='none'
-	document.getElementById("rowidbox").style.display='inline';
+const hideselectionpanel=()=>{
+	document.getElementById("selectionpanel").style.display='none';
+	document.getElementById("singletermbox").style.display='none';
+	document.getElementById("similarsentencebox").style.display='none';
+	document.getElementById("searchpanel").style.display='inline';
 }
-const showtextmenu=(lang,tofind,sid)=>{
-	let btn=document.getElementById("btnsentencesearch");
+const showselectionpanel=(lang,tofind,sid)=>{
+	let btn;
+	
+	hideselectionpanel();
+	const tokens=Dengine.tokenize(tofind.trim());
+
+	if (tokens.length==1) {
+		document.getElementById("singletermbox").style.display='inline';
+		btn=document.getElementById("btnconcordance");
+	} else {
+		document.getElementById("similarsentencebox").style.display='inline'
+		btn=document.getElementById("btnsentencesearch");
+		lblomit.style.display='inline';	
+	}
+
 	if (btn.dataset.textbackup) btn.innerText=btn.dataset.textbackup;
 	btn.disabled=false;
 	btn.dataset.tofind=tofind;
 	btn.dataset.sid=sid;
 	btn.dataset.lang=lang;
-	lblomit.style.display='inline';
- 	let tm=document.getElementById("textmenu");
-	document.getElementById("textmenu").style.display='inline'
-	document.getElementById("rowidbox").style.display='none';
+
+ 	let tm=document.getElementById("selectionpanel");
+	document.getElementById("selectionpanel").style.display='inline';
+	document.getElementById("searchpanel").style.display='none';
 }
 const setSentenceStatus=msg=>{
 	document.getElementById("btnsentencesearch").innerText=msg;
 }
-const disabletextmenu=()=>{
+const disableselectionpanel=()=>{
 	let btn=document.getElementById("btnsentencesearch");
 	btn.disabled=true;
 	btn.dataset.textbackup=btn.innerText;
@@ -126,16 +141,16 @@ document.addEventListener('selectionchange', (event) => {
   	const sel=document.getSelection();
   	if (!sel||!sel.baseNode)return;
   	const f=sel.baseNode.parentElement;
-  	let tf=sel.toString().toLowerCase();
+  	let tf=sel.toString().toLowerCase().trim();
   	if (f.classList.contains("pli")||f.classList.contains("en")){
   		if (!tf){
-  			hidetextmenu();
+  			hideselectionpanel();
   		} else {
   			let lang;
   			let sid=f.parentElement.dataset.sid;
   			lang=f.classList.contains("pli")?"pli":"";
  		 	if (!lang) lang=f.classList.contains("en")?"en":"";
-	 	 	showtextmenu(lang,tf,sid);
+	 	 	showselectionpanel(lang,tf,sid);
 	 	}
   	}
   },100);
@@ -146,9 +161,7 @@ const toggleomit=()=>{
 	event.stopPropagation();
 }
 const sentencesearch=()=>{
-	disabletextmenu();
-	const sel=document.getSelection();
-
+	disableselectionpanel();
 	const tf=btnsentencesearch.dataset.tofind;
 	if (!tf)return;
 	const sid=btnsentencesearch.dataset.sid;
@@ -166,10 +179,18 @@ const sentencesearch=()=>{
 	let opts={maxtermtoken:MAXTERMTOKEN,exclude,
 		logger:setSentenceStatus,ele:document.getElementById("textpopupbody")};
 	textsearch(lang,tokens,opts,()=>{
-		hidetextmenu();
+		hideselectionpanel();
 	});
 }
-
+const doconcordance=()=>{
+	const tf=btnconcordance.dataset.tofind;
+	if (!tf)return;
+	const sid=btnconcordance.dataset.sid;
+	const lang=btnconcordance.dataset.lang;
+	Dengine.concordance(set,lang,tf,(res,db)=>{
+		console.log("concordance",res)
+	})
+}
 const hidesuggestionpopup=()=>{
 	setTimeout(()=>suggestionpopup.style.display="none",200)
 }
@@ -313,7 +334,7 @@ const setHash=(newobj)=>{
 	const p=new URLSearchParams(hash);
 	for (var key in newobj){
 		p.delete(key);
-		p.append(key,newobj[key]);
+		if (newobj[key]) p.append(key,newobj[key]);
 	}
 	document.location.hash="#"+p.toString();
 }
@@ -327,6 +348,7 @@ const URLParams=()=>{
 const read=()=>{//dn16:0.2
 	let prefix=rowid.value.toLowerCase().replace(/ /g,""); //space was added for reflow
 	const opts={prefix,max:200}
+	if (!prefix) setHash({i:null});
 	Dengine.readpage(set,opts,(data,db)=>{
 		if (data) {
 			rendertable(data);
@@ -337,20 +359,21 @@ const read=()=>{//dn16:0.2
 const renderTOC=(ele)=>{
 	__searchrange=null;
 	bookrange.innerHTML="";
-	const prefix=ele.value.replace(/ /g,"").toLowerCase();
-	Dengine.getbookrange(set,prefix,(range,db)=>{
+	const nipata=ele.value.replace(/ /g,"").toLowerCase();
+	Dengine.getbookrange(set,nipata,(r,db)=>{
 		let bookinfo=null;
-		if (range.range &&range.books){
-			bookrange.innerHTML=range.books.length;
-			__searchrange=range.range;
+		let serials=db.getSerials();
+		if ( r&&r.isscope && r.range){
+			if (r.books) bookrange.innerHTML=r.books.length;
 			ele.classList.add("scope")
-			searchbox.classList.add("scope");
-			bookinfo=db.getHierarchy(prefix);
+			searchpanel.classList.add("scope");
+			if (r.single) bookinfo=db.getHierarchy(nipata);
+			__searchrange=r.range;
 		}
-		const blurb=db.getBlurb(prefix.replace(/\.$/,""));
+		const blurb=db.getBlurb(nipata.replace(/\.$/,""));
 		if (!bookinfo)bookinfo="";
 		if (blurb){
-			res.innerHTML=renderBookinfo(prefix,bookinfo)+blurb;
+			res.innerHTML=renderBookinfo(nipata,bookinfo)+blurb;
 		} else{
 			res.innerHTML=renderSerial(db.getSerials())+helpmsg;
 		}
@@ -362,7 +385,7 @@ const renderbindactions=()=>{
 	btnomit.onclick=toggleomit;
 	searchbutton.onclick=dosearch2;
 	clearsearch.onclick=clearsearchclick;
-
+	btnconcordance.onclick=doconcordance;
 }
 
 module.exports={renderTOC,read,dosearch2,dofindtokens,renderbindactions,renderinit,
