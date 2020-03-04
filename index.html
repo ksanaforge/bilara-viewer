@@ -10,7 +10,22 @@
 <div id="logmessage"></div>
 </div>
 
-<div id=selectionpanel>
+<div id="searchpanel">
+
+<span id="rowidbox">
+
+<input id="rowid" title="Segment ID" value=""/>
+
+<span id="bookrange"></span>
+</span>
+<span id="searchbutton">🔍</span>
+
+<span id="fulltextbox">
+<input id="tofind" title="search keywords" value="material heir"/>
+<span id="clearsearch">╳</span>
+</span>
+
+<span id=selectionbox>
 	<div id="similarsentencebox">
 	<button id="btnsentencesearch">Find Similar paragraph</button>
 	<label id="lblomit"><input id="btnomit" type="checkbox" checked/>Omitting same book</label>
@@ -18,33 +33,20 @@
 
 	<div id="singletermbox">
 		<button id="btnconcordance">Concordance</button>
-		<button id="btndictionary">Dictionary</button>
 	</div>
+</span>
+
+
 </div>
-
-<div id="searchpanel">
-
-<span id="tofindbox">
-<span id="clearsearch">╳</span>
-<input id="tofind" title="search keywords" value="material heir"/>
-
+<div class="spacer">　</div>
 <div id=suggestionpopup></div>
 <div id=textpopup>
 	<span id="closetextpopup">╳</span>
 	<div id=textpopupbody></div>
 </div>
 
-</span>
 
-<span id="rowidbox">
-<span id="searchbutton">🔍</span>
-<input id="rowid" title="Segment ID" value=""/>
-
-<span id="bookrange"></span>
-</span>
-</div>
-
-<div class="spacer">　</div>
+<div id="dictres"></div>
 <div id="res">Loading Dataset.....</div>
 
 </body>

@@ -71,7 +71,10 @@ dataset.sort((a,b)=> comparesegment(a[0],b[0]));
 dataset.forEach((item)=>item[0]=item[0]
 		.replace(/^pli-tv-/,"")
 		.replace(/^bu-vb-/,"")
+		.replace(/^bi-vb-/,"i")
 		.replace(/^bu-pm/,"pm")
-		.replace(/^bi-vb-/,"bi-"));
+		.replace(/^bi-pm/,"ipm")
+		)
+		
 console.log("writing")
 fs.writeFileSync(set+"-raw.txt",dataset.join("\n"),"utf8");

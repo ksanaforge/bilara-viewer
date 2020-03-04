@@ -1,5 +1,4 @@
-
-
+'use strict';
 const helpmsg=`<pre> <a target=_new href="https://github.com/ksanaforge/bilara-viewer">Offline Viewer</a> for <a target=_new href="https://github.com/suttacentral/bilara-data">bilara-data</a> 2020.3.1
 
  vinnan  =&gt;  viññāṇaṃ  viññāṇe  viññāṇassa
@@ -9,6 +8,8 @@ const helpmsg=`<pre> <a target=_new href="https://github.com/ksanaforge/bilara-v
  when input turn green
 
 ==change log==
+2020.3.4
+ concordance search
 2020.3.1
  find similar sentence
  hash tag to store segment id
@@ -48,8 +49,13 @@ const renderBookinfo=(bk,bookinfo)=>{
 	}
 	return "";
 }
+window.setshorthand=ele=>{
+	rowid.value=ele.getAttribute("book");
+	rowid.focus();
+	rowid.oninput();
+}
 window.setbook=ele=>{
-	bk=ele.getAttribute("book");
+	let bk=ele.getAttribute("book");
 	if (!bk)bk="";
 	rowid.value=bk+ele.innerHTML;
 	rowid.focus();
@@ -60,14 +66,20 @@ window.setsubbook=ele=>{
 	rowid.focus();
 	rowid.oninput();
 }
-const renderSerial=serial=>{
-	return "<span>"+serial.map( s=>"<button class=serial onclick=setbook(this)>"+s+"</button>").join(" ")+"</span>";
+const renderSerial=db=>{
+	let out='';
+	let shorthand=Dengine.getshorthand();
+	for (var s in shorthand) {
+		out+="<button class=serial onclick=setshorthand(this) book='"+shorthand[s]+"'>"+s+"</button> ";
+	}
+	return "<span>"+out+db.getSerials().map( s=>"<button class=serial onclick=setbook(this)>"+s+"</button>").join(" ")
+	+"</span>";
 }
 
 window.showtext=(id)=>{
 	const opts={prefix:id,max:100};
 	Dengine.readpage(set,opts,(data,db)=>{
-		rendertable(data,id,textpopupbody);
+		rendertable(data,{focusid:id,ele:textpopupbody});
 		showtextpopup();
 	});
 }
@@ -82,7 +94,7 @@ const renderSuggestion=({matches,tofinds})=>{
 		out+="<cell class=suggestion onclick='selectsuggestion(this)' data-suggestion='"+
 		tofinds[i]+"'>";
 		let count=0;
-		for (match of term){
+		for (let match of term){
 			out+= ((count>MAXTERMTOKEN)?"<span class=cancel>":"<span>")+
 					match[0]
 				+((count>MAXTERMTOKEN)?"</span>":"</span>")+"<br/>";
@@ -93,18 +105,17 @@ const renderSuggestion=({matches,tofinds})=>{
 	out+="</cellgroup></table>";
 	document.getElementById("suggestionpopup").innerHTML=out;
 }
-const hideselectionpanel=()=>{
-	document.getElementById("selectionpanel").style.display='none';
+const hideselectionbox=()=>{
+	document.getElementById("selectionbox").style.display='none';
 	document.getElementById("singletermbox").style.display='none';
 	document.getElementById("similarsentencebox").style.display='none';
-	document.getElementById("searchpanel").style.display='inline';
+	document.getElementById("fulltextbox").style.display='inline';
 }
-const showselectionpanel=(lang,tofind,sid)=>{
+const showselectionbox=(lang,tofind,sid)=>{	
 	let btn;
 	
-	hideselectionpanel();
+	hideselectionbox();
 	const tokens=Dengine.tokenize(tofind.trim());
-
 	if (tokens.length==1) {
 		document.getElementById("singletermbox").style.display='inline';
 		btn=document.getElementById("btnconcordance");
@@ -120,9 +131,9 @@ const showselectionpanel=(lang,tofind,sid)=>{
 	btn.dataset.sid=sid;
 	btn.dataset.lang=lang;
 
- 	let tm=document.getElementById("selectionpanel");
-	document.getElementById("selectionpanel").style.display='inline';
-	document.getElementById("searchpanel").style.display='none';
+ 	let tm=document.getElementById("selectionbox");
+	document.getElementById("selectionbox").style.display='inline';
+	document.getElementById("fulltextbox").style.display='none';
 }
 const setSentenceStatus=msg=>{
 	document.getElementById("btnsentencesearch").innerText=msg;
@@ -142,17 +153,13 @@ document.addEventListener('selectionchange', (event) => {
   	if (!sel||!sel.baseNode)return;
   	const f=sel.baseNode.parentElement;
   	let tf=sel.toString().toLowerCase().trim();
-  	if (f.classList.contains("pli")||f.classList.contains("en")){
-  		if (!tf){
-  			hideselectionpanel();
-  		} else {
-  			let lang;
-  			let sid=f.parentElement.dataset.sid;
-  			lang=f.classList.contains("pli")?"pli":"";
- 		 	if (!lang) lang=f.classList.contains("en")?"en":"";
-	 	 	showselectionpanel(lang,tf,sid);
-	 	}
-  	}
+  	hideselectionbox();
+  	if (!tf) return;
+  	let lang=f.dataset.lang||f.parentNode.dataset.lang;
+  	let sid=f.parentElement.dataset.sid || f.parentElement.parentElement.dataset.sid;
+
+	if (lang && sid) showselectionbox(lang,tf,sid);	 
+  	
   },100);
   
 });
@@ -176,19 +183,61 @@ const sentencesearch=()=>{
 
 	const tokens={};
 	Dengine.tokenize(tf).forEach( item=>tokens[item]=[[item,-1]]);
-	let opts={maxtermtoken:MAXTERMTOKEN,exclude,
+	const highlight=highlightexp(tf);
+	let opts={maxtermtoken:MAXTERMTOKEN,exclude,highlight,
 		logger:setSentenceStatus,ele:document.getElementById("textpopupbody")};
-	textsearch(lang,tokens,opts,()=>{
-		hideselectionpanel();
+
+	textsearch(lang,tokens,opts,(db)=>{
+		hideselectionbox();
 	});
+}
+
+const concordancestatus=(status)=>{
+	document.getElementById("dictres").innerHTML=status;
+}
+const listconcordance=()=>{
+	let centerword=btnconcordance.dataset.tofind;
+	let concordword=event.target.innerText.trim();
+	const tokens=[[centerword,[centerword,-1]],[concordword,[concordword,-1]]];
+	const highlight=highlightexp(centerword+" "+concordword);
+	const opts={ranking:"intersect",highlight,searchrange:__searchrange};
+	const lang=btnconcordance.dataset.lang;
+	textsearch(lang,tokens,opts,(db)=>{
+		
+	});
+}
+const renderConcordance=(data)=>{
+	if (!data ||!data.length)return;
+	var buttons = document.createDocumentFragment();
+	data.slice(50);
+	const max=data[0][1];
+	let centerword=document.createElement("span");
+	centerword.innerText="concordance of '"+data[0][0]+"' ";
+
+	for (var i=1;i<data.length;i++){
+		if (data[i][1]/max<0.01) break;
+		const btn=document.createElement("span");
+		btn.innerText=" "+data[i][0];
+		btn.classList.add("concordtoken");
+		btn.onclick=listconcordance;
+		buttons.appendChild( btn);
+	}
+	const res=document.getElementById("dictres");
+	res.innerHTML="";
+	res.appendChild(centerword);
+	res.appendChild(buttons);
 }
 const doconcordance=()=>{
 	const tf=btnconcordance.dataset.tofind;
 	if (!tf)return;
+	btnconcordance.disabled=true;
 	const sid=btnconcordance.dataset.sid;
 	const lang=btnconcordance.dataset.lang;
-	Dengine.concordance(set,lang,tf,(res,db)=>{
-		console.log("concordance",res)
+	const opts={setstatus:concordancestatus,searchrange:__searchrange};
+	Dengine.concordance(set,lang,tf,opts,(res,db)=>{
+		btnconcordance.disabled=false;
+		hideselectionbox();
+		renderConcordance(res);
 	})
 }
 const hidesuggestionpopup=()=>{
@@ -200,8 +249,16 @@ const showtextpopup=()=>{
 	textpopup.scrollTop=0;
 	hidesuggestionpopup();
 }
-
-const rendertable=(data,focusid,ele,idlink)=>{
+const highlightexp=(str)=>{
+	const tfobj=Dengine.parseTofind(str);
+	let out=[];
+	for (var j in tfobj){
+		out.push(tfobj[j].renderexp)
+	}
+	return out;
+}
+const rendertable=(data,opts)=>{
+	let {focusid,ele,idlink,highlight}=opts||{};
 	hidesuggestionpopup();
 	if (!ele) {
 		ele=document.getElementById("res");
@@ -210,22 +267,24 @@ const rendertable=(data,focusid,ele,idlink)=>{
 	let idclickable = idlink || ele==document.getElementById("res");
 	let out="<table>";
 
-	const tfobj=Dengine.parseTofind(tofind.value);
+	
 	const hit="";
 	for (var i=0;i<data.length;i++){
 		let plitext=" "+data[i][1];
 		let entext=" "+data[i][2];
-		for (var j in tfobj){
-			let pat=tfobj[j].renderexp;
-			plitext=plitext.replace(pat,(m)=>"<span class=hit>"+m+"</span>" );
-			entext=entext.replace(pat,(m)=>"<span class=hit>"+m+"</span>" );
+		if (highlight) {
+			for (let pat of highlight){
+				plitext=plitext.replace(pat,(m)=>"<span class=hit>"+m+"</span>" );
+				entext=entext.replace(pat,(m)=>"<span class=hit>"+m+"</span>" );
+			}
 		}
 
 		let segid=data[i][0];
 		clickable=(idclickable||i==0||i==data.length-1)?" onclick=showtext('"+segid+"')":"";
 		let idclass=(focusid==segid)?"focussegid id=focussegid":"segid";
-		out+="<cellgroup data-sid='"+segid+"'><cell class="+idclass+clickable+">"+segid.replace(":",": ")+"</cell><cell class=pli>"+plitext
-		+"</cell><cell class=en>"+entext+"</cell></cellgroup>";
+		out+="<cellgroup data-sid='"+segid+"'><cell class="+idclass+clickable+">"+segid.replace(":",": ")
+		+"</cell><cell data-lang=pli class=pli>"+plitext
+		+"</cell><cell data-lang=en class=en>"+entext+"</cell></cellgroup>";
 	}
 	out+="</table>"
 	ele.innerHTML=out;
@@ -269,25 +328,32 @@ const textsearch=(lang,tokens,opts,cb)=>{
 		if (opts.logger) opts.logger("fetching idarr "+idarr.length);
 		Dengine.fetchidarr(set,idarr,(data,db)=>{
 			if (typeof cb=="function") cb(db);
-			rendertable(data,'',opts.ele||document.getElementById("res"),true);
+			rendertable(data,{focusid:'',highlight:opts.highlight,ele:opts.ele||document.getElementById("res"),idlink:true});
 			if (opts.ele==textpopupbody)showtextpopup();
 
 		});
 	});
 }
 
-
+const cleardictres=()=>{
+	document.getElementById("dictres").innerHTML="";
+}
 const dosearch2=()=>{
 	hidesuggestionpopup();
+	cleardictres();
 	timestart=(new Date()).getMilliseconds();
 	setStatus("loading tokens");
-	const tfobj=Dengine.parseTofind(tofind.value);
+	const tf=tofind.value.trim();
+	const tfobj=Dengine.parseTofind(tf);
 	let tofindtoken={};
 	for (var o of tfobj)tofindtoken[o.raw]=o.regex;
 	Dengine.findtokens(set,tofindtoken,(data,db,lang)=>{
 		setStatus("searching");
 		setHash({q:tofind.value});
-		let opts={maxtermtoken:MAXTERMTOKEN,ele:document.getElementById("res"),searchrange:__searchrange};
+		const highlight=highlightexp(tf);
+		let opts={maxtermtoken:MAXTERMTOKEN,highlight,
+			ele:document.getElementById("res"),searchrange:__searchrange};
+		
 		textsearch(lang,data,opts);
 	});
 }
@@ -366,7 +432,7 @@ const renderTOC=(ele)=>{
 		if ( r&&r.isscope && r.range){
 			if (r.books) bookrange.innerHTML=r.books.length;
 			ele.classList.add("scope")
-			searchpanel.classList.add("scope");
+			fulltextbox.classList.add("scope");
 			if (r.single) bookinfo=db.getHierarchy(nipata);
 			__searchrange=r.range;
 		}
@@ -375,7 +441,7 @@ const renderTOC=(ele)=>{
 		if (blurb){
 			res.innerHTML=renderBookinfo(nipata,bookinfo)+blurb;
 		} else{
-			res.innerHTML=renderSerial(db.getSerials())+helpmsg;
+			res.innerHTML=renderSerial(db)+helpmsg;
 		}
 	});
 }
