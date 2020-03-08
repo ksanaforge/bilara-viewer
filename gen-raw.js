@@ -73,6 +73,8 @@ dataset.forEach((item)=>item[0]=item[0]
 		.replace(/^bu-vb-/,"")
 		.replace(/^bi-vb-/,"i")
 		.replace(/^bu-pm/,"pm")
+		.replace(/^tha-ap/,"ap")
+		.replace(/^thi-ap/,"iap")
 		.replace(/^bi-pm/,"ipm")
 		)
 		

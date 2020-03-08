@@ -227,6 +227,9 @@ const renderConcordance=(data)=>{
 	res.appendChild(centerword);
 	res.appendChild(buttons);
 }
+const clearRes=()=>{
+	document.getElementById("res").innerHTML="";
+}
 const doconcordance=()=>{
 	const tf=btnconcordance.dataset.tofind;
 	if (!tf)return;
@@ -238,6 +241,7 @@ const doconcordance=()=>{
 		btnconcordance.disabled=false;
 		hideselectionbox();
 		renderConcordance(res);
+		clearRes();
 	})
 }
 const hidesuggestionpopup=()=>{
@@ -423,7 +427,7 @@ const read=()=>{//dn16:0.2
 	});
 }
 const renderTOC=(ele)=>{
-	__searchrange=null;
+	
 	bookrange.innerHTML="";
 	const nipata=ele.value.replace(/ /g,"").toLowerCase();
 	Dengine.getbookrange(set,nipata,(r,db)=>{
@@ -431,10 +435,10 @@ const renderTOC=(ele)=>{
 		let serials=db.getSerials();
 		if ( r&&r.isscope && r.range){
 			if (r.books) bookrange.innerHTML=r.books.length;
-			ele.classList.add("scope")
-			fulltextbox.classList.add("scope");
 			if (r.single) bookinfo=db.getHierarchy(nipata);
 			__searchrange=r.range;
+		} else {
+			__searchrange=null;
 		}
 		const blurb=db.getBlurb(nipata.replace(/\.$/,""));
 		if (!bookinfo)bookinfo="";
@@ -453,6 +457,6 @@ const renderbindactions=()=>{
 	clearsearch.onclick=clearsearchclick;
 	btnconcordance.onclick=doconcordance;
 }
-
+const searchrange=()=>__searchrange;
 module.exports={renderTOC,read,dosearch2,dofindtokens,renderbindactions,renderinit,
-hidetextpopup,hidesuggestionpopup,URLParams}
+hidetextpopup,hidesuggestionpopup,URLParams,searchrange}

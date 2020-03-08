@@ -1,4 +1,4 @@
-let {renderTOC,read,dosearch2,dofindtokens,renderinit,URLParams,
+let {renderTOC,read,dosearch2,dofindtokens,renderinit,URLParams,searchrange,
 	hidetextpopup,hidesuggestionpopup,renderbindactions}=require("./render");
 
 const clearlogger=()=>{
@@ -32,6 +32,7 @@ window.init=()=>{
 	},10);
 }
 const togglelogger=()=>logger.style.display=logger.style.display=="none"?"block":"none";
+let lastrowid="";
 const idinput=()=>{
 	if ((event && event.key=="Enter")) {
 		if (rowid.value.toLowerCase()=="log") {
@@ -40,12 +41,21 @@ const idinput=()=>{
 		} else {
 			read();
 		}
+		lastrowid=rowid.value;
 		return;
 	}
+	if (lastrowid!==rowid.value){
+		renderTOC(rowid);
+	}
 	rowid.classList.remove("scope");
-	searchpanel.classList.remove("scope");
+	fulltextbox.classList.remove("scope");		
+	if (searchrange()){
+		console.log("search range",searchrange)
+		rowid.classList.add("scope")
+		fulltextbox.classList.add("scope");
+	}
 
-	renderTOC(rowid);
+	lastrowid=rowid.value;
 }
 let inputtimer=0;
 const tofindinput=()=>{
