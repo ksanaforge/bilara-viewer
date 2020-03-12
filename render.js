@@ -347,6 +347,7 @@ const dosearch2=()=>{
 	cleardictres();
 	timestart=(new Date()).getMilliseconds();
 	setStatus("loading tokens");
+
 	const tf=tofind.value.trim();
 	const tfobj=Dengine.parseTofind(tf);
 	let tofindtoken={};
